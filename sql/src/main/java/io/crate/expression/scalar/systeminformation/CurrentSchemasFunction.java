@@ -60,9 +60,11 @@ public class CurrentSchemasFunction extends Scalar<String[], Object> implements 
 
     @Override
     public String[] evaluate(TransactionContext txnCtx, Input<Object>... args) {
-        boolean includeImplicitSchemas = true;
-        if (args.length > 0 && args[0] != null) {
-            includeImplicitSchemas = (Boolean) args[0].value();
+        assert args.length == 1 : "expecting 1 boolean argument";
+
+        Boolean includeImplicitSchemas = (Boolean) args[0].value();
+        if (includeImplicitSchemas == null) {
+            includeImplicitSchemas = false;
         }
 
         ArrayList<String> schemas = new ArrayList<>();

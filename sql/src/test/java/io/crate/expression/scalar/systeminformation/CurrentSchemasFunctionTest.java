@@ -56,4 +56,9 @@ public class CurrentSchemasFunctionTest extends AbstractScalarFunctionsTest {
     public void testEvaluateCurrentSchema() {
         assertEvaluate("current_schemas(is_awesome)", new String[]{"doc"}, Literal.BOOLEAN_FALSE);
     }
+
+    @Test
+    public void testEvaluateNull() {
+        assertEvaluate("current_schemas(is_awesome)", new String[]{"doc"}, Literal.of((Boolean) null));
+    }
 }
