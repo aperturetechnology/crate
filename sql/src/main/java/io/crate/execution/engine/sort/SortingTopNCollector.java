@@ -28,7 +28,6 @@ import io.crate.data.Bucket;
 import io.crate.data.Input;
 import io.crate.data.Row;
 import io.crate.execution.engine.collect.CollectExpression;
-import io.crate.execution.engine.sort.RowPriorityQueue;
 import org.apache.lucene.util.ArrayUtil;
 
 import java.util.Collection;
@@ -64,13 +63,15 @@ public class SortingTopNCollector implements Collector<Row, RowPriorityQueue<Obj
      * @param comparator         used to sort the rows
      * @param limit              the max number of rows the result should contain
      * @param offset             the number of rows to skip (after sort)
+     * @param numExpectedRows    the total number of rows expected
      */
     public SortingTopNCollector(Collection<? extends Input<?>> inputs,
                                 Iterable<? extends CollectExpression<Row, ?>> expressions,
                                 int numOutputs,
                                 Comparator<Object[]> comparator,
                                 int limit,
-                                int offset) {
+                                int offset,
+                                long numExpectedRows) {
         Preconditions.checkArgument(limit > 0, "Invalid LIMIT: value must be > 0; got: " + limit);
         Preconditions.checkArgument(offset >= 0, "Invalid OFFSET: value must be >= 0; got: " + offset);
 
@@ -79,6 +80,9 @@ public class SortingTopNCollector implements Collector<Row, RowPriorityQueue<Obj
         this.numOutputs = numOutputs;
         this.comparator = comparator;
         this.offset = offset;
+        if (numExpectedRows > 0) {
+            limit = Math.min(((Long) numExpectedRows).intValue(), limit);
+        }
         this.maxSize = limit + offset;
 
         if (maxSize >= ArrayUtil.MAX_ARRAY_LENGTH || maxSize < 0)  {
